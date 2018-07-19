@@ -52,8 +52,140 @@ class SFExpress extends BaseObject {
             'deliverInfo' => $deliverInfo,
             'consigneeInfo' => $consigneeInfo,
             'cargoInfo' => $cargoInfo,
-            'addedServices' => $addedServices,
+            'addedServices' => $addedServices
         ];
         return $this->request('200', $data);
+    }
+
+    /**
+     * 订单查询
+     *
+     * @param string $order 客户订单号，最大长度限于56位
+     * @return array
+     */
+    public function orderQuery($order){
+        if(!$order){
+            $this->error('客户订单号不能为空');
+        }
+        $data = [
+            'orderId' => $order
+        ];
+        return $this->request('203', $data);
+    }
+
+    /**
+     * 订单筛选
+     *
+     * @param string$consigneeAddress 到件方详细地址
+     * @param string $consigneeProvince 到件方所在省份
+     * @param string $consigneeCity 到件方所属城市名称
+     * @param string $consigneeCounty 到件人所在县/区
+     * @param string $deliverAddress 寄件方详细地址，当寄件方省份、城市、区/县三者其一不为空时，则寄件方详细地址不能为空
+     * @param string $deliverProvince 寄件方所在省份
+     * @param string $deliverCity 寄件方所属城市名称
+     * @param string $deliverCounty 寄件人所在县/区
+     * @param string $order 客户订单号，最大长度限于56位
+     * @param string $consigneeTel 到件方联系电话
+     * @param string $deliverTel 寄件方联系电话
+     * @param string $deliverCustId 寄方客户编码
+     * @param string $consigneeCountry 到件方国家，默认值为中国
+     * @param string $deliverCountry 寄件人所在国家，默认值为中国
+     * @return array
+     */
+    public function orderFilter($consigneeAddress, $consigneeProvince, $consigneeCity, $consigneeCounty, $deliverAddress=null, $deliverProvince=null, $deliverCity=null, $deliverCounty=null, $order=null, $consigneeTel=null, $deliverTel=null, $deliverCustId=null, $consigneeCountry='中国', $deliverCountry='中国'){
+        if(!$consigneeAddress || !$consigneeProvince || !$consigneeCity || !$consigneeCounty){
+            $this->error('到件方所在省份/城市/县区/详细地址不能为空');
+        }
+        if(($deliverProvince || $deliverCity || $deliverCounty) && !$deliverAddress){
+            $this->error('当寄件方省份、城市、区/县三者其一不为空时，则寄件方详细地址不能为空');
+        }
+        $data = [
+            'filterType' => 1,
+            'orderId' => $order,
+            'consigneeAddress' => $consigneeAddress,
+            'deliverCustId' => $deliverCustId,
+            'deliverTel' => $deliverTel,
+            'deliverAddress' => $deliverAddress,
+            'deliverProvince' => $deliverProvince,
+            'deliverCity' => $deliverCity,
+            'deliverCounty' => $deliverCounty,
+            'deliverCountry' => $deliverCountry,
+            'consigneeTel' => $consigneeTel,
+            'consigneeProvince' => $consigneeProvince,
+            'consigneeCity' => $consigneeCity,
+            'consigneeCounty' => $consigneeCounty,
+            'consigneeCountry' => $consigneeCountry
+        ];
+        return $this->request('204', $data);
+    }
+
+    /**
+     * 路由查询
+     *
+     * @param string $trackingNumber 查询号（订单号/运单号）,如果有多个单号，以英文逗号分隔,如”755123456789, 755123456788, 755123456787”批量查询中，最多不能超过5个单号
+     * @param int $trackingType 查询类别 [1:根据运单号查询【只支持查询客户在本系统下的订单对应的顺丰运单号】（默认） 2:根据订单号查询]
+     * @param int $methodType 查询方法选择 [1:标准查询(默认) 2:定制查询【暂不支持】]
+     * @return array
+     */
+    public function routeQuery($trackingNumber, $trackingType=1, $methodType=1){
+        if(!$trackingNumber){
+            $this->error('查询号不能为空');
+        }
+        $data = [
+            'trackingType' => $trackingType,
+            'trackingNumber' => $trackingNumber,
+            'methodType' => $methodType
+        ];
+        return $this->request('501', $data);
+    }
+
+    /**
+     * 路由增量查询
+     *
+     * @param string $order 客户订单号，最大长度限于56位
+     * @return array
+     */
+    public function routeIncQuery($order){
+        if(!$order){
+            $this->error('客户订单号不能为空');
+        }
+        $data = [
+            'orderId' => $order,
+        ];
+        return $this->request('504', $data);
+    }
+
+    /**
+     * 基础服务查询
+     *
+     * @return array
+     */
+    public function productBasicQuery(){
+        return $this->request('250');
+    }
+
+    /**
+     * 附加服务查询
+     *
+     * @return array
+     */
+    public function productAdditionalQuery(){
+        return $this->request('251');
+    }
+
+    /**
+     * 电子运单图片下载
+     *
+     * @param string $order 客户订单号，最大长度限于56位
+     * @return array
+     */
+    public function waybill($order){
+        if(!$order){
+            $this->error('客户订单号不能为空');
+        }
+        $data = [
+            'orderId' => $order,
+        ];
+        return $this->request('205', $data);
     }
 }

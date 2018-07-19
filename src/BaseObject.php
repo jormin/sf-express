@@ -365,8 +365,6 @@ class BaseObject{
             }
             $url .= '?'.implode('&', $args);
         }
-        $params = json_decode('{"head":{"transMessageId":"201807190000000001","transType":200},"body":{"addedServices":[{"name":"CUSTID","value":"7550010173"},{"name":"","value":""}],"cargoInfo":{"cargo":"iphone5s","cargoAmount":"4670.00","cargoCount":"1000","cargoTotalWeight":121000,"cargoUnit":"部","cargoWeight":"121.00","parcelQuantity":1},"consigneeInfo":{"address":"世界第一广场","city":"深圳","company":"顺丰","contact":"黄飞鸿","country":"中国","mobile":"18588413321","province":"广东","shipperCode":"518100","tel":"075533915561"},"custId":"7550010173","deliverInfo":{"address":"上地","city":"朝阳","company":"京东","contact":"李卡卡","country":"中国","mobile":"13612822894","province":"北京","shipperCode":"787564","tel":"010-95123669"},"expressType":2,"isDoCall":2,"isGenBillNo":1,"needReturnTrackingNo":1,"orderId":"10000001201404120000000001","payMethod":1,"remark":"易碎物品，小心轻放","sendStartTime":"2018-07-20 07:31:55"}}', true);
-        p($params);
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -379,7 +377,6 @@ class BaseObject{
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
         }
         $data = curl_exec($curl);
-        p($data);die;
         if (curl_errno($curl)) {
             return curl_error($curl);
         }
