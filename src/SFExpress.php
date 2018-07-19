@@ -140,6 +140,23 @@ class SFExpress extends BaseObject {
     }
 
     /**
+     * 路由增量信息申请
+     *
+     * @param string $order 客户订单号，最大长度限于56位
+     * @return array
+     */
+    public function routePushApply($order){
+        if(!$order){
+            $this->error('客户订单号不能为空');
+        }
+        $data = [
+            'orderId' => $order,
+            'status' => 1
+        ];
+        return $this->request('503', $data);
+    }
+
+    /**
      * 路由增量查询
      *
      * @param string $order 客户订单号，最大长度限于56位

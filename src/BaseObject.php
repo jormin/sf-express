@@ -24,6 +24,10 @@ class BaseObject{
             'name' => '路由查询',
             'url' => '/route/query/'
         ],
+        '503' => [
+            'name' => '路由增量信息申请接口',
+            'url' => '/route/push/apply/'
+        ],
         '504' => [
             'name' => '路由增量查询',
             'url' => '/route/inc/query/'
