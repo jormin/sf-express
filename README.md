@@ -167,7 +167,7 @@ $sfExpress->waybillImage($order);
 
 ## 参考文档
 
-1. [顺丰接口文档](chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/http://origin.sf-express.com/cn/sc/platform/sd/document.pdf)
+1. [顺丰接口文档](http://origin.sf-express.com/cn/sc/platform/sd/document.pdf)
 
 2. [顺丰Api测试工具](https://open.sf-express.com/apitools/apitools.html)
 
