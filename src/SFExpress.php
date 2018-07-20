@@ -140,7 +140,7 @@ class SFExpress extends BaseObject {
     }
 
     /**
-     * 路由增量信息申请
+     * 路由增量信息推送申请
      *
      * @param string $order 客户订单号，最大长度限于56位
      * @return array
@@ -196,7 +196,7 @@ class SFExpress extends BaseObject {
      * @param string $order 客户订单号，最大长度限于56位
      * @return array
      */
-    public function waybill($order){
+    public function waybillImage($order){
         if(!$order){
             $this->error('客户订单号不能为空');
         }
