@@ -2,6 +2,8 @@
 
 namespace Jormin\SFExpress;
 
+use Jormin\Qiniu\Qiniu;
+
 class SFExpress extends BaseObject {
 
     /**
@@ -10,6 +12,7 @@ class SFExpress extends BaseObject {
      * @param string $order 客户订单号，最大长度限于56位
      * @param string $custId 顺丰月结卡号10位数字
      * @param array $consigneeInfo 收件方信息
+     * @param array $cargoInfo 货物信息
      * @param array $deliverInfo 寄件方信息
      * @param string $remark 备注，最大长度30个汉字
      * @param int $expressType 快件产品类别 [1:标准快递(默认) 2:顺丰特惠 3:电商特惠 5:顺丰次晨 6:顺丰即日 7:电商速配 15:生鲜速配]
@@ -20,22 +23,21 @@ class SFExpress extends BaseObject {
      * @param string $payArea 月结卡号对应的网点，如果付款方式为第三方支付，则必填
      * @param string $sendStartTime 要求上门取件开始时间，格式：YYYY-MM-DDHH24:MM:SS，示例：2012-7-30 09:30:00，默认值为系统收到订单的系统时间
      * @param int $needReturnTrackingNo 是否需要签回单号 [1:需要 0:不需要(默认)]
-     * @param array $cargoInfo 货物信息
      * @param array $addedServices 增值服务（注意字段名称必须为英文字母大写）
      * @return array
      */
-    public function createOrder($order, $custId, $consigneeInfo, $deliverInfo=null, $remark=null, $expressType=1, $payMethod=1, $isDocall=0, $isGenBillno=1, $isGenEletricPic=1, $payArea=null, $sendStartTime=null, $needReturnTrackingNo=0, $cargoInfo=null, $addedServices=null){
+    public function createOrder($order, $custId, $consigneeInfo, $cargoInfo, $deliverInfo=null, $remark=null, $expressType=1, $payMethod=1, $isDocall=0, $isGenBillno=1, $isGenEletricPic=1, $payArea=null, $sendStartTime=null, $needReturnTrackingNo=0, $addedServices=null){
         if(!$order){
-            $this->error('客户订单号不能为空');
+            return $this->error('客户订单号不能为空');
         }
         if(!$custId){
-            $this->error('月结卡号不能为空');
+            return $this->error('月结卡号不能为空');
         }
         if(!$consigneeInfo){
-            $this->error('收件方信息不能为空');
+            return $this->error('收件方信息不能为空');
         }
         if($payMethod === 3 && !$payArea){
-            $this->error('付款方式为第三方支付时，月卡号对应的网店信息不能空');
+            return $this->error('付款方式为第三方支付时，月卡号对应的网店信息不能空');
         }
         $data = [
             'orderId' => $order,
@@ -65,7 +67,7 @@ class SFExpress extends BaseObject {
      */
     public function orderQuery($order){
         if(!$order){
-            $this->error('客户订单号不能为空');
+            return $this->error('客户订单号不能为空');
         }
         $data = [
             'orderId' => $order
@@ -94,10 +96,10 @@ class SFExpress extends BaseObject {
      */
     public function orderFilter($consigneeAddress, $consigneeProvince, $consigneeCity, $consigneeCounty, $deliverAddress=null, $deliverProvince=null, $deliverCity=null, $deliverCounty=null, $order=null, $consigneeTel=null, $deliverTel=null, $deliverCustId=null, $consigneeCountry='中国', $deliverCountry='中国'){
         if(!$consigneeAddress || !$consigneeProvince || !$consigneeCity || !$consigneeCounty){
-            $this->error('到件方所在省份/城市/县区/详细地址不能为空');
+            return $this->error('到件方所在省份/城市/县区/详细地址不能为空');
         }
         if(($deliverProvince || $deliverCity || $deliverCounty) && !$deliverAddress){
-            $this->error('当寄件方省份、城市、区/县三者其一不为空时，则寄件方详细地址不能为空');
+            return $this->error('当寄件方省份、城市、区/县三者其一不为空时，则寄件方详细地址不能为空');
         }
         $data = [
             'filterType' => 1,
@@ -129,7 +131,7 @@ class SFExpress extends BaseObject {
      */
     public function routeQuery($trackingNumber, $trackingType=1, $methodType=1){
         if(!$trackingNumber){
-            $this->error('查询号不能为空');
+            return $this->error('查询号不能为空');
         }
         $data = [
             'trackingType' => $trackingType,
@@ -147,7 +149,7 @@ class SFExpress extends BaseObject {
      */
     public function routePushApply($order){
         if(!$order){
-            $this->error('客户订单号不能为空');
+            return $this->error('客户订单号不能为空');
         }
         $data = [
             'orderId' => $order,
@@ -164,7 +166,7 @@ class SFExpress extends BaseObject {
      */
     public function routeIncQuery($order){
         if(!$order){
-            $this->error('客户订单号不能为空');
+            return $this->error('客户订单号不能为空');
         }
         $data = [
             'orderId' => $order,
@@ -194,15 +196,51 @@ class SFExpress extends BaseObject {
      * 电子运单图片下载
      *
      * @param string $order 客户订单号，最大长度限于56位
+     * @param string $path 图片保存地址，保存在本地时代表绝对路径，保存到七牛时提供保存的Key，如果保存到七牛时没有提供path，则默认用【/sf-express/waybill/{订单号}.png】保存
+     * @param bool $qiniu 是否上传到七牛
+     * @param array $qiniuConfig 七牛配置 accessKey secretKey bucket domain
      * @return array
      */
-    public function waybillImage($order){
+    public function waybillImage($order, $path, $qiniu=false, $qiniuConfig=[]){
         if(!$order){
-            $this->error('客户订单号不能为空');
+            return $this->error('客户订单号不能为空');
+        }
+        if(!$qiniu && !$path){
+            return $this->error('保存到本地时图片路径不能为空');
+        }
+        if($qiniu && (!$qiniuConfig['accessKey'] || !$qiniuConfig['secretKey'] || !$qiniuConfig['bucket'] || !$qiniuConfig['domain'])){
+            return $this->error('七牛配置信息有误');
         }
         $data = [
             'orderId' => $order,
         ];
-        return $this->request('205', $data);
+        $response = $this->request('205', $data);
+        if(!$response['success']){
+            return $response;
+        }
+        $imageContent = $response['data']['body']['images'][0];
+        $imageContent = preg_replace("/\r|\n/", '', $imageContent);
+        if($qiniu){
+            $tmp = dirname(__FILE__).'/tmp'.$order.'.png';
+            if (!file_put_contents($tmp, base64_decode($imageContent))){
+                return $this->error('保存电子运单图片失败', $response['data']);
+            }
+            $qiniu = new Qiniu($qiniuConfig['accessKey'], $qiniuConfig['secretKey']);
+            if(!$path){
+                $path = 'sf-express/waybill/'.$order.'.png';
+            }
+            $qiniuResponse = $qiniu->upload($qiniuConfig['bucket'], $tmp, $path);
+            unlink($tmp);
+            if(!$qiniuResponse['success']){
+                return $this->error('上传电子运单图片到七牛失败', $response['data']);
+            }
+            $path = $qiniuConfig['domain'].'/'.$path;
+        }else{
+            if (!file_put_contents($path, base64_decode($imageContent))){
+                return $this->error('保存电子运单图片失败', $response['data']);
+            }
+        }
+        $response['data']['body']['images'] = [$path];
+        return $this->success('保存电子运单图片成功', $response['data']);
     }
 }
