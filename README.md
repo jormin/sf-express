@@ -154,7 +154,7 @@ $sfExpress->productAdditionalQuery();
 ```
 
 ### 电子运单图片下载
-> 支持存储图片存储到七牛，需要配置七牛的AccessKey\SecretKey\Bucket\Domain
+> 支持存储图片到七牛，需要配置七牛的AccessKey\SecretKey\Bucket\Domain
 ```php
 /**
  * 电子运单图片下载
