@@ -218,6 +218,10 @@ class BaseObject{
             return $return;
         }
         $head = $response['head'];
+        if(in_array($head['code'], ['EX_CODE_OPENAPI_0103', 'EX_CODE_OPENAPI_0104', 'EX_CODE_OPENAPI_0105', 'EX_CODE_OPENAPI_0106'])){
+            $this->getToken();
+            return $this->request($transType, $data);
+        }
         if($head['code'] !== 'EX_CODE_OPENAPI_0200'){
             return $this->error($head['message'], $response);
         }
