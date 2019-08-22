@@ -184,7 +184,7 @@ class BaseObject{
      *
      * @var string
      */
-    private $tokenFile = 'access_token.json';
+    private $tokenFile = 'access_token%s.json';
 
     /**
      * SFExpress constructor.
@@ -197,6 +197,7 @@ class BaseObject{
         $this->appID = $appID;
         $this->appKey = $appKey;
         $this->sandbox = $sandbox;
+        $this->tokenFile = sprintf($this->tokenFile, '_'.$appID);
     }
 
     /**
